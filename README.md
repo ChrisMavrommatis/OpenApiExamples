@@ -7,8 +7,8 @@
 ## Features
 
 - ✨ Seamlessly injects example payloads into your OpenAPI/Swagger JSON
-- ⚡ Supports multiple content types (JSON, XML, and more)
-- 🧩 Easy integration with ASP.NET Core and Swashbuckle
+- ⚡ Supports multiple content types (JSON, XML)
+- 🧩 Easy integration with ASP.NET Core
 - 🔌 Extensible formatter system
 
 ## Installation
