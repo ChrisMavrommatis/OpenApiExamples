@@ -12,7 +12,7 @@
         <RepositoryUrl>https://github.com/ChrisMavrommatis/OpenApiExamples</RepositoryUrl>
         <Version>0.0.1</Version>
         <PackageIcon>package_icon.png</PackageIcon>
-        <AssemblyName>FluxResults</AssemblyName>
+        <AssemblyName>OpenApiExamples</AssemblyName>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <RootNamespace>OpenApiExamples</RootNamespace>
