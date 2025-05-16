@@ -16,8 +16,8 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <RootNamespace>OpenApiExamples</RootNamespace>
-        <Description>TOTO.</Description>
-        <PackageTags>toso;</PackageTags>
+        <Description>Make your API stand out! OpenApiExamples lets you showcase real request and response samples in your OpenAPI docs with zero hassle.</Description>
+        <PackageTags>openapi;examples;swagger;api-documentation;</PackageTags>
         <RepositoryType>git</RepositoryType>
     </PropertyGroup>
 
