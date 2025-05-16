@@ -18,6 +18,4 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{057E6DC1-1C0F-49E2-8DE2-95079897AE49} = {6CDEDDDF-6F9C-4A31-BE42-D04CE5AE30A5}
 	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-	EndGlobalSection
 EndGlobal
