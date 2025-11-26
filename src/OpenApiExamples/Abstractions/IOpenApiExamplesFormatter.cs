@@ -1,9 +1,9 @@
-using Microsoft.OpenApi.Any;
+using System.Text.Json.Nodes;
 
 namespace OpenApiExamples.Abstractions;
 
 public interface IOpenApiExamplesFormatter
 {
     IEnumerable<string> SupportedContentTypes { get; }
-    ValueTask<IOpenApiAny> FormatAsync(object example);
+    ValueTask<JsonNode> FormatAsync(object example);
 }

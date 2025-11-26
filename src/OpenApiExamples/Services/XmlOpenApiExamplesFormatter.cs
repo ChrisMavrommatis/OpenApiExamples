@@ -1,6 +1,7 @@
+using System.Text.Json.Nodes;
 using System.Xml.Serialization;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi;
 using OpenApiExamples.Abstractions;
 using OpenApiExamples.Models;
 
@@ -23,14 +24,14 @@ internal class XmlOpenApiExamplesFormatter : IOpenApiExamplesFormatter
         "text/xml",
     ];
 	
-    public ValueTask<IOpenApiAny> FormatAsync(object example)
+    public ValueTask<JsonNode> FormatAsync(object example)
     {
         var serializer = new XmlSerializer(example.GetType());
 
         using var stringWriter = new StringWriterWithEncoding(this.options.Value.XmlSerializerOptions.Encoding);
         serializer.Serialize(stringWriter, example);
         var xml = stringWriter.ToString();
-        var openApiExample = new OpenApiString(xml);
-        return ValueTask.FromResult<IOpenApiAny>(openApiExample);
+        var openApiExample = JsonValue.Create(xml);
+        return ValueTask.FromResult<JsonNode>(openApiExample);
     }
 }

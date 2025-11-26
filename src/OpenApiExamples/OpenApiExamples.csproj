@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <PackageId>OpenApiExamples</PackageId>
@@ -10,7 +10,7 @@
         <Authors>Chris Mavrommatis</Authors>
         <PackageProjectUrl>https://github.com/ChrisMavrommatis/OpenApiExamples</PackageProjectUrl>
         <RepositoryUrl>https://github.com/ChrisMavrommatis/OpenApiExamples</RepositoryUrl>
-        <Version>0.0.3</Version>
+        <Version>1.0.0</Version>
         <PackageIcon>package_icon.png</PackageIcon>
         <AssemblyName>OpenApiExamples</AssemblyName>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -22,7 +22,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
     </ItemGroup>
 
     <ItemGroup>

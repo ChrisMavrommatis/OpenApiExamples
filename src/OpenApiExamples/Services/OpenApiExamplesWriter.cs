@@ -1,8 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using OpenApiExamples.Abstractions;
+using IOpenApiExample = OpenApiExamples.Abstractions.IOpenApiExample;
 
 namespace OpenApiExamples.Services;
 
@@ -90,7 +91,7 @@ internal class OpenApiExamplesWriter : IOpenApiExamplesWriter
         foreach (var example in examples)
         {
             var formattedExample = await formatter.FormatAsync(example.Value);
-            content.Examples.Add(example.Key, new Microsoft.OpenApi.Models.OpenApiExample()
+            content.Examples?.Add(example.Key, new Microsoft.OpenApi.OpenApiExample()
             {
                 Summary = example.Summary,
                 Description = example.Description,

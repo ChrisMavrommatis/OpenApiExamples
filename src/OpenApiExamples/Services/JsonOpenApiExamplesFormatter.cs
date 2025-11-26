@@ -1,6 +1,6 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Any;
 using OpenApiExamples.Abstractions;
 
 namespace OpenApiExamples.Services;
@@ -21,10 +21,10 @@ internal class JsonOpenApiExamplesFormatter : IOpenApiExamplesFormatter
         "application/problem+json",
     ];
 	
-    public ValueTask<IOpenApiAny> FormatAsync(object example)
+    public ValueTask<JsonNode> FormatAsync(object example)
     {
         var serializedExample = JsonSerializer.Serialize(example, this.options.Value.JsonSerializerOptions);
-        var openApiExample = new OpenApiString(serializedExample);
-        return ValueTask.FromResult<IOpenApiAny>(openApiExample);
+        var openApiExample = JsonValue.Create(serializedExample);
+        return ValueTask.FromResult<JsonNode>(openApiExample);
     }
 }

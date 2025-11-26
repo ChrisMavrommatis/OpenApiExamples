@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using OpenApiExamples.Abstractions;
 using OpenApiExamples.Models;
 
