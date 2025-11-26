@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -91,7 +92,11 @@ internal class OpenApiExamplesWriter : IOpenApiExamplesWriter
         foreach (var example in examples)
         {
             var formattedExample = await formatter.FormatAsync(example.Value);
-            content.Examples?.Add(example.Key, new Microsoft.OpenApi.OpenApiExample()
+            if(content.Examples is null)
+            {
+                content.Examples = new Dictionary<string, Microsoft.OpenApi.IOpenApiExample>();
+            }
+            content.Examples.Add(example.Key, new Microsoft.OpenApi.OpenApiExample()
             {
                 Summary = example.Summary,
                 Description = example.Description,
