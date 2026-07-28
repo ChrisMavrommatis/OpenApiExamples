@@ -51,7 +51,9 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services)
         where T : class, IOpenApiExamplesFormatter
     {
-        if (services.Any(s => s.ServiceType == typeof(T)))
+        // ImplementationType, not ServiceType: formatters are registered against IOpenApiExamplesFormatter, so
+        // ServiceType is never the concrete type and this guard would never fire.
+        if (services.Any(s => s.ImplementationType == typeof(T)))
         {
             throw new InvalidOperationException($"Formatter type '{typeof(T).Name}' already exists.");
         }
