@@ -19,8 +19,12 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build .Net 10.0
-        run: dotnet build --configuration Release --no-restore --framework net10.0
+      # No --framework here. Passing it to a solution build sets TargetFramework as a global property for every
+      # project, which makes the test project's ProjectReference to the library resolve to a different global
+      # property set than the solution's own build request for it. MSBuild then builds the library twice in
+      # parallel and the two races on bin/Release. The library is net10.0 only, so the flag bought nothing.
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
 
       - name: Test
         run: dotnet test --configuration Release --no-build
