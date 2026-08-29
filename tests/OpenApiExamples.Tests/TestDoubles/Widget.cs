@@ -29,3 +29,28 @@ public class MultipleWidgetExamples : IMultipleOpenApiExamplesProvider<Widget>
 public class NotAnExampleProvider
 {
 }
+
+// A provider whose collection is empty, so the writer never creates the Examples dictionary.
+public class NoWidgetExamples : IMultipleOpenApiExamplesProvider<Widget>
+{
+    public IEnumerable<IOpenApiExample<Widget>> GetExamples() => [];
+}
+
+public class WidgetNamer
+{
+    public string Name => "injected";
+}
+
+// Providers are built with ActivatorUtilities, so a constructor dependency has to come from the container.
+public class InjectedWidgetExample : ISingleOpenApiExamplesProvider<Widget>
+{
+    private readonly WidgetNamer namer;
+
+    public InjectedWidgetExample(WidgetNamer namer)
+    {
+        this.namer = namer;
+    }
+
+    public IOpenApiExample<Widget> GetExample() =>
+        OpenApiExample.Create("default", new Widget { Id = 7, Name = this.namer.Name });
+}

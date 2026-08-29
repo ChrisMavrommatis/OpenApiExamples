@@ -21,3 +21,5 @@ obj/
 
 # Build Output
 /nupkgs
+
+.agents

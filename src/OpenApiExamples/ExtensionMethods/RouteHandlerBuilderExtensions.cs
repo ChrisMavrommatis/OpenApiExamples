@@ -63,7 +63,7 @@ public static class RouteHandlerBuilderExtensions
     ) where T : class, IMultipleOpenApiExamplesProvider
         => builder.ResponseExamples<T>(statusCode.ToString(), contentType);
 
-    static RouteHandlerBuilder ResponseExamples<T>(
+    public static RouteHandlerBuilder ResponseExamples<T>(
         this RouteHandlerBuilder builder,
         string statusCode,
         string contentType

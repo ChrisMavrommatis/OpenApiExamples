@@ -16,13 +16,15 @@ internal static class TestApp
 {
     public static async Task<JsonElement> GenerateDocumentAsync(
         Action<WebApplication> mapEndpoints,
-        Action<OpenApiExamplesOptions>? configureExamples = null
+        Action<OpenApiExamplesOptions>? configureExamples = null,
+        Action<IServiceCollection>? configureServices = null
     )
     {
         var builder = WebApplication.CreateSlimBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddOpenApi(options => options.AddExamples());
         builder.Services.AddOpenApiExamples(configureExamples);
+        configureServices?.Invoke(builder.Services);
 
         await using var app = builder.Build();
         app.MapOpenApi();

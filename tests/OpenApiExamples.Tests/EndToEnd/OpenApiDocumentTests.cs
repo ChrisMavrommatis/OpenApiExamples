@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using OpenApiExamples.ExtensionMethods;
 using OpenApiExamples.Models;
 using OpenApiExamples.Tests.TestDoubles;
@@ -173,5 +174,195 @@ public class OpenApiDocumentTests
 
         Assert.False(content.TryGetProperty("example", out _));
         Assert.True(content.TryGetProperty("schema", out _));
+    }
+
+    [Fact]
+    public async Task RequestExamples_AreKeyedOnTheRequestBody()
+    {
+        var document = await TestApp.GenerateDocumentAsync(app =>
+            app.MapPost("/widgets", (Widget widget) => TypedResults.Ok(widget))
+                .RequestExamples<MultipleWidgetExamples>("application/json")
+        );
+
+        var examples = document.RequestContent("/widgets", "application/json")
+            .GetProperty("examples");
+
+        Assert.Equal("A small widget", examples.GetProperty("small").GetProperty("summary").GetString());
+        Assert.Equal(
+            "crate",
+            examples.GetProperty("large").GetProperty("value").GetProperty("Name").GetString()
+        );
+    }
+
+    [Fact]
+    public async Task GroupLevelResponseExamples_ApplyToEveryEndpointInTheGroup()
+    {
+        var document = await TestApp.GenerateDocumentAsync(app =>
+        {
+            var group = app.MapGroup("/api")
+                .ResponseExamples<MultipleWidgetExamples>(200, "application/json");
+
+            group.MapGet("/widgets", () => TypedResults.Ok(new Widget { Id = 1, Name = "box" }));
+            group.MapGet("/gadgets", () => TypedResults.Ok(new Widget { Id = 2, Name = "crate" }));
+        });
+
+        foreach (var path in new[] { "/api/widgets", "/api/gadgets" })
+        {
+            var examples = document.ResponseContent(path, "200", "application/json")
+                .GetProperty("examples");
+
+            Assert.Equal("A small widget", examples.GetProperty("small").GetProperty("summary").GetString());
+            Assert.True(examples.TryGetProperty("large", out _));
+        }
+    }
+
+    [Fact]
+    public async Task ResponseExample_WithAStringStatusCode_IsWritten()
+    {
+        var document = await TestApp.GenerateDocumentAsync(app =>
+            app.MapGet("/widgets", () => TypedResults.Ok(new Widget { Id = 1, Name = "box" }))
+                .ResponseExample<SingleWidgetExample>("200", "application/json")
+        );
+
+        var example = document.ResponseContent("/widgets", "200", "application/json")
+            .GetProperty("example");
+
+        Assert.Equal("box", example.GetProperty("Name").GetString());
+    }
+
+    [Fact]
+    public async Task ResponseExamples_WithAStringStatusCode_AreWritten()
+    {
+        var document = await TestApp.GenerateDocumentAsync(app =>
+            app.MapGet("/widgets", () => TypedResults.Ok(new Widget()))
+                .ResponseExamples<MultipleWidgetExamples>("200", "application/json")
+        );
+
+        var examples = document.ResponseContent("/widgets", "200", "application/json")
+            .GetProperty("examples");
+
+        Assert.True(examples.TryGetProperty("small", out _));
+        Assert.True(examples.TryGetProperty("large", out _));
+    }
+
+    [Fact]
+    public async Task GroupLevelResponseExamples_WithAStringStatusCode_AreWritten()
+    {
+        var document = await TestApp.GenerateDocumentAsync(app =>
+        {
+            var group = app.MapGroup("/api")
+                .ResponseExamples<MultipleWidgetExamples>("200", "application/json");
+
+            group.MapGet("/widgets", () => TypedResults.Ok(new Widget()));
+        });
+
+        var examples = document.ResponseContent("/api/widgets", "200", "application/json")
+            .GetProperty("examples");
+
+        Assert.True(examples.TryGetProperty("small", out _));
+    }
+
+    [Fact]
+    public async Task ProviderWithAConstructorDependency_IsBuiltFromTheContainer()
+    {
+        // The writer uses ActivatorUtilities, which is the only reason a provider may take services at all.
+        var document = await TestApp.GenerateDocumentAsync(
+            app => app.MapGet("/widgets", () => TypedResults.Ok(new Widget()))
+                .ResponseExample<InjectedWidgetExample>(200, "application/json"),
+            configureServices: services => services.AddSingleton<WidgetNamer>()
+        );
+
+        var example = document.ResponseContent("/widgets", "200", "application/json")
+            .GetProperty("example");
+
+        Assert.Equal("injected", example.GetProperty("Name").GetString());
+    }
+
+    [Fact]
+    public async Task ProviderReturningNoExamples_WritesNoExamplesKey()
+    {
+        var document = await TestApp.GenerateDocumentAsync(app =>
+            app.MapGet("/widgets", () => TypedResults.Ok(new Widget()))
+                .ResponseExamples<NoWidgetExamples>(200, "application/json")
+        );
+
+        var content = document.ResponseContent("/widgets", "200", "application/json");
+
+        // The writer only creates the dictionary inside the loop, so an empty provider leaves the media type bare.
+        Assert.False(content.TryGetProperty("examples", out _));
+        Assert.False(content.TryGetProperty("example", out _));
+    }
+
+    [Fact]
+    public async Task XmlResponseExamples_AreKeyedStrings()
+    {
+        var document = await TestApp.GenerateDocumentAsync(app =>
+            app.MapGet("/widgets", () => TypedResults.Ok(new Widget()))
+                .Produces<Widget>(200, "application/xml")
+                .ResponseExamples<MultipleWidgetExamples>(200, "application/xml")
+        );
+
+        var examples = document.ResponseContent("/widgets", "200", "application/xml")
+            .GetProperty("examples");
+
+        var small = examples.GetProperty("small").GetProperty("value");
+        Assert.Equal(JsonValueKind.String, small.ValueKind);
+        Assert.Contains("<Widget", small.GetString()!);
+        Assert.Contains("<Name>crate</Name>", examples.GetProperty("large").GetProperty("value").GetString()!);
+    }
+
+    [Fact]
+    public async Task StatusCodeThatTheEndpointDoesNotDocument_IsIgnored()
+    {
+        var document = await TestApp.GenerateDocumentAsync(app =>
+            app.MapGet("/widgets", () => TypedResults.Ok(new Widget()))
+                .ResponseExample<SingleWidgetExample>(404, "application/json")
+        );
+
+        var responses = document.GetProperty("paths").GetProperty("/widgets").GetProperty("get")
+            .GetProperty("responses");
+
+        Assert.False(responses.TryGetProperty("404", out _));
+        Assert.False(
+            document.ResponseContent("/widgets", "200", "application/json").TryGetProperty("example", out _)
+        );
+    }
+
+    [Fact]
+    public async Task RequestAndResponseExamplesOnOneEndpoint_AreBothWritten()
+    {
+        var document = await TestApp.GenerateDocumentAsync(app =>
+            app.MapPost("/widgets", (Widget widget) => TypedResults.Ok(widget))
+                .RequestExample<SingleWidgetExample>("application/json")
+                .ResponseExamples<MultipleWidgetExamples>(200, "application/json")
+        );
+
+        Assert.Equal(
+            "box",
+            document.RequestContent("/widgets", "application/json")
+                .GetProperty("example").GetProperty("Name").GetString()
+        );
+        Assert.True(
+            document.ResponseContent("/widgets", "200", "application/json", method: "post")
+                .GetProperty("examples").TryGetProperty("small", out _)
+        );
+    }
+
+    [Fact]
+    public async Task TwoContentTypesOnOneResponse_AreBothWritten()
+    {
+        // Each attached metadata item is a separate pass through the transformer loop.
+        var document = await TestApp.GenerateDocumentAsync(app =>
+            app.MapGet("/widgets", () => TypedResults.Ok(new Widget { Id = 1, Name = "box" }))
+                .Produces<Widget>(200, "application/json", "application/xml")
+                .ResponseExample<SingleWidgetExample>(200, "application/json")
+                .ResponseExample<SingleWidgetExample>(200, "application/xml")
+        );
+
+        var json = document.ResponseContent("/widgets", "200", "application/json").GetProperty("example");
+        var xml = document.ResponseContent("/widgets", "200", "application/xml").GetProperty("example");
+
+        Assert.Equal(JsonValueKind.Object, json.ValueKind);
+        Assert.Equal(JsonValueKind.String, xml.ValueKind);
     }
 }

@@ -10,15 +10,23 @@
         <Authors>Chris Mavrommatis</Authors>
         <PackageProjectUrl>https://github.com/ChrisMavrommatis/OpenApiExamples</PackageProjectUrl>
         <RepositoryUrl>https://github.com/ChrisMavrommatis/OpenApiExamples</RepositoryUrl>
-        <Version>1.0.2</Version>
+        <Version>1.1.0</Version>
         <PackageIcon>package_icon.png</PackageIcon>
         <AssemblyName>OpenApiExamples</AssemblyName>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <RootNamespace>OpenApiExamples</RootNamespace>
-        <Description>Make your API stand out! OpenApiExamples lets you showcase real request and response samples in your OpenAPI docs with zero hassle.</Description>
-        <PackageTags>openapi;examples;swagger;api-documentation;</PackageTags>
+        <Description>Make your API docs actually useful. OpenApiExamples adds real request and response examples to the OpenAPI document ASP.NET Core generates for your minimal API endpoints, rendered by Swagger UI and Scalar. Write a small provider class, attach it to an endpoint with RequestExample&lt;T&gt; or ResponseExample&lt;T&gt;, and you are done. One example or many named ones, per endpoint or per route group, JSON and XML built in, any other content type through your own formatter, providers resolved from DI, and zero runtime cost because examples are written when the document is generated.</Description>
+        <PackageTags>openapi;openapi-examples;swagger;swagger-ui;scalar;aspnetcore;minimal-api;api-documentation;examples;request-example;response-example;dotnet</PackageTags>
+        <Copyright>Copyright (c) Chris Mavrommatis</Copyright>
         <RepositoryType>git</RepositoryType>
+
+        <!-- Source Link ships in the SDK, so this needs no PackageReference. Symbols go up with the package:
+             dotnet nuget push picks up the .snupkg sitting beside the .nupkg on its own. -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
 
     <ItemGroup>

@@ -38,7 +38,7 @@ public static class RouteGroupBuilderExtensions
     ) where T : class, IMultipleOpenApiExamplesProvider
         => builder.ResponseExamples<T>(statusCode.ToString(), contentType);
 
-    static RouteGroupBuilder ResponseExamples<T>(
+    public static RouteGroupBuilder ResponseExamples<T>(
         this RouteGroupBuilder builder,
         string statusCode,
         string contentType
