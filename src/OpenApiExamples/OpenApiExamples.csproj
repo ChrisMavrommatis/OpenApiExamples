@@ -30,7 +30,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
         <!-- Not used directly. Microsoft.AspNetCore.OpenApi 10.0.10 asks for Microsoft.OpenApi [2.0.0, ) and
              NuGet settles on 2.0.0, which has a high-severity advisory (GHSA-v5pm-xwqc-g5wc, stack overflow on
              circular $refs). The floor is open, so naming it here lifts the whole graph - and since this is a
