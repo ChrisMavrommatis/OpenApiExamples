@@ -1,0 +1,160 @@
+name: Release
+
+# One dispatch does the whole thing: gate, verify, tag, GitHub release, NuGet push.
+#
+# The release body is read from CHANGELOG.md, so the section for this version has to exist and say
+# something before dispatching. Before you dispatch: rename `## [Unreleased]` to the version, open a fresh
+# empty Unreleased above it, bump <Version> in the csproj, and push both to main.
+#
+# Renaming this file breaks publishing. The nuget.org trusted publishing policy matches on the filename.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release, with no leading v - for example 1.1.0'
+        required: true
+        type: string
+      dry_run:
+        description: 'Run every check and stop. Nothing is tagged, released or published.'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Seconds, and it runs alone. Every one of these is cheap to find and a pushed tag is permanent.
+  gate:
+    name: gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: The dispatch ref is main
+        if: github.ref_name != 'main'
+        run: |
+          echo "Release from main. This dispatch was on ${{ github.ref_name }}."
+          exit 1
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      # Through the environment, not interpolated into the shell. Whoever dispatches types this string, and
+      # the semver check below only happens to reject the characters that would matter.
+      - name: The version is semver, with no leading v
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)*$' \
+            || { echo "'$VERSION' is not a version. Write 1.1.0, not v1.1.0."; exit 1; }
+
+      - name: The csproj version agrees
+        env:
+          VERSION: ${{ inputs.version }}
+        run: .github/scripts/version.sh check "$VERSION"
+
+      - name: The changelog section exists and is not empty
+        env:
+          VERSION: ${{ inputs.version }}
+        run: .github/scripts/changelog.sh check "$VERSION"
+
+      # A tag can be on origin and not in the runner's checkout, so check both. Re-releasing a version
+      # silently is worse than not releasing.
+      - name: The version is not already tagged
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "Tag v$VERSION already exists here."
+            exit 1
+          fi
+          if git ls-remote --tags --exit-code origin "refs/tags/v$VERSION" >/dev/null 2>&1; then
+            echo "Tag v$VERSION already exists on origin."
+            exit 1
+          fi
+          echo "v$VERSION is not tagged."
+
+  release:
+    name: release
+    needs: gate
+    runs-on: ubuntu-latest
+    # The nuget.org trusted publishing policy names this environment, so the OIDC token has to carry it.
+    # It is also where a required reviewer goes, if the publish should ever need a second pair of eyes.
+    environment: production
+    permissions:
+      contents: write  # the tag and the GitHub release
+      id-token: write  # the OIDC token nuget.org trades for a temporary API key
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.x'
+
+      - run: dotnet restore
+
+      # No --framework. It makes MSBuild build the library twice in parallel and race on bin/Release.
+      # See .agents/memory/ci-build-avoids-framework-flag.md.
+      - run: dotnet build --configuration Release --no-restore
+
+      - run: dotnet test --configuration Release --no-build
+
+      - run: dotnet pack --configuration Release --no-build --output ./nupkgs
+
+      - name: The release notes
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          .github/scripts/changelog.sh extract "$VERSION" > "$RUNNER_TEMP/notes.md"
+          echo "--- release body ---"
+          cat "$RUNNER_TEMP/notes.md"
+
+      - name: What a real run would publish
+        run: ls -l nupkgs/
+
+      # Nothing above this line is irreversible. Nothing below the tag is reversible.
+      - name: Tag
+        if: ${{ !inputs.dry_run }}
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag -a "v$VERSION" -m "OpenApiExamples $VERSION"
+          git push origin "refs/tags/v$VERSION"
+
+      - name: Publish the GitHub release
+        if: ${{ !inputs.dry_run }}
+        env:
+          VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release create "v$VERSION" --title "v$VERSION" --notes-file "$RUNNER_TEMP/notes.md" nupkgs/*.nupkg
+
+      # The key this returns lasts an hour and is good for one push, so this sits here rather than at the
+      # top of the job. NUGET_USER is the nuget.org profile name, not the email address.
+      - name: NuGet login
+        if: ${{ !inputs.dry_run }}
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Publish to NuGet
+        if: ${{ !inputs.dry_run }}
+        run: dotnet nuget push "nupkgs/*.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
+      - name: Dry run - what did not happen
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "Dry run. Nothing was tagged, released or published."
+          echo "Every gate and the full build, test and pack ran. Dispatch again with dry_run off to release."

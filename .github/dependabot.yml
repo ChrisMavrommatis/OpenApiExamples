@@ -1,0 +1,44 @@
+version: 2
+updates:
+  # Two kinds of dependency live here and they carry very different risk.
+  #
+  # **The test project's packages are grouped**, minor and patch together. Nothing downstream sees them.
+  #
+  # **The two library packages are deliberately not in any group**, so each arrives in a pull request of its
+  # own. This is a library, so its floors become every consumer's floors, and the Microsoft.OpenApi pin is
+  # there to clear an advisory rather than to track a version. A grouped bump would hide that decision
+  # inside a pull request full of test-package churn. See .agents/rules/the-openapi-pin-is-every-consumers-floor.md
+  # before merging either one.
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      test-dependencies:
+        patterns:
+          - "xunit*"
+          - "Microsoft.NET.Test.Sdk"
+          - "coverlet*"
+          - "Microsoft.AspNetCore.TestHost"
+        update-types:
+          - minor
+          - patch
+
+  # The workflows pin every action by commit SHA. This is what keeps the SHA and the version comment beside
+  # it moving together, and the comment is the only human-readable record of which version a SHA is.
+  #
+  # Grouped for minor and patch only. An action major can change the runner's Node or how outputs are
+  # passed, and NuGet/login's output is what the push authenticates with.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
