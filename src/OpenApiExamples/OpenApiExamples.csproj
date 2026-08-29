@@ -36,7 +36,7 @@
              circular $refs). The floor is open, so naming it here lifts the whole graph - and since this is a
              library, this floor becomes every consumer's floor. Drop this once Microsoft.AspNetCore.OpenApi
              raises its own floor past 2.7.5. -->
-        <PackageReference Include="Microsoft.OpenApi" Version="2.11.0" />
+        <PackageReference Include="Microsoft.OpenApi" Version="3.10.2" />
     </ItemGroup>
 
     <ItemGroup>
