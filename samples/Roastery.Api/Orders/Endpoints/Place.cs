@@ -42,7 +42,7 @@ internal static class Place
             PlacedAt = DateTimeOffset.UtcNow,
             PickupSlot = request.PickupSlot,
             Lines = request.Lines,
-            // Flat 3.20 a line until someone gives me a price list.
+            // Flat 3.20 an item until someone gives me a price list.
             Total = request.Lines.Sum(line => line.Quantity * 3.20m),
         };
 

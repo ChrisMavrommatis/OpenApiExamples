@@ -7,8 +7,10 @@ updates:
   # **The two library packages are deliberately not in any group**, so each arrives in a pull request of its
   # own. This is a library, so its floors become every consumer's floors, and the Microsoft.OpenApi pin is
   # there to clear an advisory rather than to track a version. A grouped bump would hide that decision
-  # inside a pull request full of test-package churn. See .agents/rules/the-openapi-pin-is-every-consumers-floor.md
-  # before merging either one.
+  # inside a pull request full of test-package churn. Read the pin's reasoning before merging either one.
+  #
+  # **The sample's packages are grouped with the tests.** They are a renderer and a UI, nothing downstream
+  # sees them, and they must not dilute the one-PR-per-library-package signal above.
   - package-ecosystem: nuget
     directory: /
     schedule:
@@ -21,6 +23,8 @@ updates:
           - "Microsoft.NET.Test.Sdk"
           - "coverlet*"
           - "Microsoft.AspNetCore.TestHost"
+          - "Scalar*"
+          - "Swashbuckle*"
         update-types:
           - minor
           - patch

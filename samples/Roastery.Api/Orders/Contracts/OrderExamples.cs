@@ -17,7 +17,8 @@ public class OrderListExamples : IMultipleOpenApiExamplesProvider<Order[]>
         OpenApiExample.Create(
             key: "morningRush",
             summary: "Two orders on the counter",
-            value: MockData.Orders
+            description: "Newest first, the same order the endpoint sorts them in.",
+            value: MockData.Orders.OrderByDescending(order => order.PlacedAt).ToArray()
         ),
         OpenApiExample.Create(
             key: "ready",

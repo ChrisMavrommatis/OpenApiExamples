@@ -34,7 +34,9 @@ builder.Services.AddOpenApi(options =>
 });
 ```
 
-`ArrayOf{Name}` is what `XmlSerializer` writes, so the drawn sample matches your real payload.
+`ArrayOf{Name}` is what `XmlSerializer` writes, so the root element matches your real payload. The
+property names inside it still come from the JSON schema, so they stay camelCase where your XML is
+PascalCase.
 
 ## Declaring a content type
 

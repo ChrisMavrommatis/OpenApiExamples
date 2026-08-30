@@ -100,7 +100,6 @@ jobs:
       - run: dotnet restore
 
       # No --framework. It makes MSBuild build the library twice in parallel and race on bin/Release.
-      # See .agents/memory/ci-build-avoids-framework-flag.md.
       - run: dotnet build --configuration Release --no-restore
 
       - run: dotnet test --configuration Release --no-build

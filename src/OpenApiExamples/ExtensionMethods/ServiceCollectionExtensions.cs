@@ -43,11 +43,8 @@ public static class ServiceCollectionExtensions
                 // it by default and land in the same shape as the schema printed above them. Copied, not
                 // shared: System.Text.Json freezes an instance the first time it serializes anything, and
                 // configureOptions below may still want to add a converter.
-                var appJsonOptions = sp.GetService<IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>>();
-                if (appJsonOptions is not null)
-                {
-                    options.JsonSerializerOptions = new JsonSerializerOptions(appJsonOptions.Value.SerializerOptions);
-                }
+                var appJsonOptions = sp.GetRequiredService<IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>>();
+                options.JsonSerializerOptions = new JsonSerializerOptions(appJsonOptions.Value.SerializerOptions);
 
                 configureOptions?.Invoke(options);
             });

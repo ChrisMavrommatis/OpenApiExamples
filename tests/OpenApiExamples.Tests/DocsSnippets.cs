@@ -139,10 +139,10 @@ public static class Snippets
     public static void Configuration(WebApplicationBuilder builder)
     {
         builder.Services.AddOpenApiExamples(options =>
-        {
-            options.JsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = null };
-            options.XmlSerializerOptions.Encoding = Encoding.UTF8;
-        });
+            options.XmlSerializerOptions.Encoding = Encoding.UTF8);
+
+        builder.Services.AddOpenApiExamples(options =>
+            options.JsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = null });
 
         builder.Services.ConfigureHttpJsonOptions(options =>
             options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));

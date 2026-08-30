@@ -26,7 +26,7 @@ public class NotFoundProblemExample : ISingleOpenApiExamplesProvider<Problem>
                 Type = "https://tools.ietf.org/html/rfc9110#section-15.5.5",
                 Title = "Not Found",
                 Status = 404,
-                Detail = "No bean or order is filed under that id.",
+                Detail = "Nothing is filed under that identifier.",
             }
         );
 }

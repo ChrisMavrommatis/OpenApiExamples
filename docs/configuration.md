@@ -5,10 +5,7 @@ app:
 
 ```csharp
 builder.Services.AddOpenApiExamples(options =>
-{
-    options.JsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = null };
-    options.XmlSerializerOptions.Encoding = Encoding.UTF8;
-});
+    options.XmlSerializerOptions.Encoding = Encoding.UTF8);
 ```
 
 | Option | Purpose |
@@ -27,5 +24,12 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 ```
 
-Setting `options.JsonSerializerOptions` yourself replaces that copy rather than adding to it. Only the
-minimal-API `JsonOptions` is read, never MVC's.
+Setting `options.JsonSerializerOptions` replaces that copy rather than adding to it, so anything your app
+configured is gone unless you configure it again:
+
+```csharp
+builder.Services.AddOpenApiExamples(options =>
+    options.JsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = null });
+```
+
+Only the minimal-API `JsonOptions` is read, never MVC's.

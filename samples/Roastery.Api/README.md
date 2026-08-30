@@ -45,7 +45,8 @@ Try it:
 ```text
 curl localhost:5280/api/orders/ORD-1042
 curl -H 'Accept: application/xml' localhost:5280/api/orders/ORD-1042
-curl -X POST localhost:5280/api/invoices -H 'Content-Type: application/xml' --data @invoice.xml
+curl -X POST localhost:5280/api/invoices -H 'Content-Type: application/xml' \
+  --data '<IssueInvoiceRequest><Customer>Harbour Cafe</Customer><Lines><InvoiceLine><BeanId>house-blend</BeanId><Bags>2</Bags><PricePerBag>28.00</PricePerBag><LineTotal>56.00</LineTotal></InvoiceLine></Lines></IssueInvoiceRequest>'
 ```
 
 ## Layout
@@ -82,7 +83,7 @@ group
 | `ResponseExamples<T>`, named responses | `Beans/Endpoints/List.cs`, including an empty result |
 | `ResponseExample<T>` per status code | any endpoint, 200 / 201 / 404 |
 | The same example in two content types | `Orders/Endpoints/Get.cs`, one call each for JSON and XML |
-| An XML-only operation | anything under `Invoices/Endpoints/` |
+| An XML-only operation | `Invoices/Endpoints/Issue.cs`, request and response both XML |
 | Group level examples | `Beans/BeanEndpoints.cs`, the shared 500 |
 | Examples inheriting the app's JSON settings | `Program.cs`, one `JsonStringEnumConverter` for both |
 | Examples built from the same data as the handlers | `Data/MockData.cs` |
@@ -104,5 +105,5 @@ it prints `XML example cannot be generated; root element name is undefined`. The
 
 ## Not done
 
-No validation, no persistence, no auth. `Place.cs` charges a flat 3.20 a line and `Issue.cs` adds VAT at a
+No validation, no persistence, no auth. `Place.cs` charges a flat 3.20 an item and `Issue.cs` adds VAT at a
 hard-coded 24%. The point is the document it generates, not the roastery.

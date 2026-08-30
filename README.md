@@ -4,7 +4,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/OpenApiExamples.svg)](https://www.nuget.org/packages/OpenApiExamples)
 [![Downloads](https://img.shields.io/nuget/dt/OpenApiExamples.svg)](https://www.nuget.org/packages/OpenApiExamples)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/ChrisMavrommatis/OpenApiExamples/blob/main/LICENSE)
 
 OpenAPI examples for **ASP.NET Core minimal APIs** on **.NET 10**, rendered by **Swagger UI** and **Scalar**.
 
@@ -97,4 +97,4 @@ provider that reaches for a database does that work at startup rather than per r
 
 ## License
 
-[MIT](LICENSE) © Chris Mavrommatis
+[MIT](https://github.com/ChrisMavrommatis/OpenApiExamples/blob/main/LICENSE) © Chris Mavrommatis
