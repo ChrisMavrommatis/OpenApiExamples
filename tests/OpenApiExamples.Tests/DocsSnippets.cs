@@ -1,7 +1,9 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.OpenApi;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +11,7 @@ using OpenApiExamples;
 using OpenApiExamples.Abstractions;
 using OpenApiExamples.ExtensionMethods;
 
-namespace OpenApiExamples.Tests.ReadmeSnippets;
+namespace OpenApiExamples.Tests.DocsSnippets;
 
 public class Widget
 {
@@ -73,16 +75,15 @@ internal static class MyYamlSerializer
     public static string Serialize(object value) => value.ToString() ?? string.Empty;
 }
 
-// Every snippet in README.md, compiled. This file is a syntax check, not a behaviour test - if the public API
-// shifts under the documentation, this stops building.
+// Every snippet in README.md and docs/, compiled. This file is a syntax check, not a behaviour test - if the
+// public API shifts under the documentation, this stops building.
 public static class Snippets
 {
     public static void QuickStart(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddOpenApiExamples(options =>
-            options.JsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        builder.Services.AddOpenApiExamples();
 
         builder.Services.AddOpenApi(options => options.AddExamples());
 
@@ -107,13 +108,44 @@ public static class Snippets
         api.MapGet("/gadgets", () => TypedResults.Ok(Array.Empty<Widget>()));
     }
 
+    public static void DeclaringContentTypes(WebApplication app)
+    {
+        app.MapGet("/widgets/{id}", (int id) => TypedResults.Ok(new Widget()))
+            .Produces<Widget>(200, "application/json", "application/xml")
+            .ResponseExample<WidgetExample>(200, "application/json")
+            .ResponseExample<WidgetExample>(200, "application/xml");
+    }
+
+    public static void XmlRootNames(WebApplicationBuilder builder)
+    {
+        builder.Services.AddOpenApi(options =>
+        {
+            options.AddExamples();
+
+            options.AddSchemaTransformer((schema, context, _) =>
+            {
+                var element = context.JsonTypeInfo.Type.GetElementType();
+
+                if (schema.Type == JsonSchemaType.Array && element is not null)
+                {
+                    schema.Xml ??= new OpenApiXml { Name = $"ArrayOf{element.Name}", Wrapped = true };
+                }
+
+                return Task.CompletedTask;
+            });
+        });
+    }
+
     public static void Configuration(WebApplicationBuilder builder)
     {
         builder.Services.AddOpenApiExamples(options =>
         {
-            options.JsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+            options.JsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = null };
             options.XmlSerializerOptions.Encoding = Encoding.UTF8;
         });
+
+        builder.Services.ConfigureHttpJsonOptions(options =>
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
         builder.Services
             .AddOpenApiExamples()

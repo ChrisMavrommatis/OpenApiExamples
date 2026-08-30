@@ -38,8 +38,8 @@ public class OpenApiExamplesFormatterTests
         // A JsonValue here is the regression: the example lands in the document double encoded, as
         // "example": "{\"Id\":1}" instead of "example": { "Id": 1 }.
         var obj = Assert.IsAssignableFrom<JsonObject>(node);
-        Assert.Equal(1, (int)obj["Id"]!);
-        Assert.Equal("box", (string?)obj["Name"]);
+        Assert.Equal(1, (int)obj["id"]!);
+        Assert.Equal("box", (string?)obj["name"]);
     }
 
     [Fact]
@@ -64,15 +64,16 @@ public class OpenApiExamplesFormatterTests
             "application/json",
             options => options.JsonSerializerOptions = new JsonSerializerOptions
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNamingPolicy = null,
             }
         );
 
         var node = await formatter.FormatAsync(new Widget { Id = 1, Name = "box" });
 
+        // The inherited default is camelCase, so PascalCase here can only have come from the configuration.
         var obj = Assert.IsAssignableFrom<JsonObject>(node);
-        Assert.True(obj.ContainsKey("id"), "Expected the configured camelCase policy to be applied.");
-        Assert.False(obj.ContainsKey("Id"));
+        Assert.True(obj.ContainsKey("Id"), "Expected the configured naming policy to be applied.");
+        Assert.False(obj.ContainsKey("id"));
     }
 
     [Theory]

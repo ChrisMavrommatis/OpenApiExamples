@@ -2,6 +2,9 @@
   <Folder Name="/src/">
     <Project Path="src/OpenApiExamples/OpenApiExamples.csproj" />
   </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/Roastery.Api/Roastery.Api.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/OpenApiExamples.Tests/OpenApiExamples.Tests.csproj" />
   </Folder>

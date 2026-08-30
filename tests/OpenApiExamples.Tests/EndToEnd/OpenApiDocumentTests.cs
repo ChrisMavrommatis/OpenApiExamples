@@ -23,8 +23,8 @@ public class OpenApiDocumentTests
 
         // The bug this library shipped in 1.0.1 showed up here as JsonValueKind.String.
         Assert.Equal(JsonValueKind.Object, example.ValueKind);
-        Assert.Equal(1, example.GetProperty("Id").GetInt32());
-        Assert.Equal("box", example.GetProperty("Name").GetString());
+        Assert.Equal(1, example.GetProperty("id").GetInt32());
+        Assert.Equal("box", example.GetProperty("name").GetString());
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class OpenApiDocumentTests
             .GetProperty("example");
 
         Assert.Equal(JsonValueKind.Object, example.ValueKind);
-        Assert.Equal("box", example.GetProperty("Name").GetString());
+        Assert.Equal("box", example.GetProperty("name").GetString());
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class OpenApiDocumentTests
         var large = examples.GetProperty("large");
         Assert.Equal("A large widget", large.GetProperty("summary").GetString());
         Assert.Equal("Takes two people to lift", large.GetProperty("description").GetString());
-        Assert.Equal("crate", large.GetProperty("value").GetProperty("Name").GetString());
+        Assert.Equal("crate", large.GetProperty("value").GetProperty("name").GetString());
     }
 
     [Fact]
@@ -96,28 +96,45 @@ public class OpenApiDocumentTests
         {
             var example = document.ResponseContent(path, "200", "application/json").GetProperty("example");
             Assert.Equal(JsonValueKind.Object, example.ValueKind);
-            Assert.Equal("box", example.GetProperty("Name").GetString());
+            Assert.Equal("box", example.GetProperty("name").GetString());
         }
     }
 
     [Fact]
-    public async Task ConfiguredSerializerOptions_ReachTheGeneratedDocument()
+    public async Task AppSerializerOptions_AreInheritedByExamples()
+    {
+        var document = await TestApp.GenerateDocumentAsync(
+            app => app.MapPost("/widgets", (Widget widget) => TypedResults.Ok(widget))
+                .RequestExample<SingleWidgetExample>("application/json"),
+            configureServices: services => services.ConfigureHttpJsonOptions(
+                options => options.SerializerOptions.PropertyNamingPolicy = null
+            )
+        );
+
+        var example = document.RequestContent("/widgets", "application/json").GetProperty("example");
+
+        // The app asked for PascalCase, so the schema is PascalCase and the example has to follow it there.
+        Assert.True(example.TryGetProperty("Id", out _));
+        Assert.False(example.TryGetProperty("id", out _));
+    }
+
+    [Fact]
+    public async Task ConfiguredSerializerOptions_BeatTheInheritedOnes()
     {
         var document = await TestApp.GenerateDocumentAsync(
             app => app.MapPost("/widgets", (Widget widget) => TypedResults.Ok(widget))
                 .RequestExample<SingleWidgetExample>("application/json"),
             options => options.JsonSerializerOptions = new JsonSerializerOptions
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNamingPolicy = null,
             }
         );
 
         var example = document.RequestContent("/widgets", "application/json").GetProperty("example");
 
-        // Worth pinning: the default OpenApiExamplesOptions.JsonSerializerOptions is PascalCase while
-        // ASP.NET Core generates camelCase schemas, so this is the setting that makes examples match schemas.
-        Assert.True(example.TryGetProperty("id", out _));
-        Assert.False(example.TryGetProperty("Id", out _));
+        // The app is on camelCase and this asked for PascalCase. Deliberate disagreement stays possible.
+        Assert.True(example.TryGetProperty("Id", out _));
+        Assert.False(example.TryGetProperty("id", out _));
     }
 
     [Fact]
@@ -190,7 +207,7 @@ public class OpenApiDocumentTests
         Assert.Equal("A small widget", examples.GetProperty("small").GetProperty("summary").GetString());
         Assert.Equal(
             "crate",
-            examples.GetProperty("large").GetProperty("value").GetProperty("Name").GetString()
+            examples.GetProperty("large").GetProperty("value").GetProperty("name").GetString()
         );
     }
 
@@ -227,7 +244,7 @@ public class OpenApiDocumentTests
         var example = document.ResponseContent("/widgets", "200", "application/json")
             .GetProperty("example");
 
-        Assert.Equal("box", example.GetProperty("Name").GetString());
+        Assert.Equal("box", example.GetProperty("name").GetString());
     }
 
     [Fact]
@@ -275,7 +292,7 @@ public class OpenApiDocumentTests
         var example = document.ResponseContent("/widgets", "200", "application/json")
             .GetProperty("example");
 
-        Assert.Equal("injected", example.GetProperty("Name").GetString());
+        Assert.Equal("injected", example.GetProperty("name").GetString());
     }
 
     [Fact]
@@ -340,7 +357,7 @@ public class OpenApiDocumentTests
         Assert.Equal(
             "box",
             document.RequestContent("/widgets", "application/json")
-                .GetProperty("example").GetProperty("Name").GetString()
+                .GetProperty("example").GetProperty("name").GetString()
         );
         Assert.True(
             document.ResponseContent("/widgets", "200", "application/json", method: "post")

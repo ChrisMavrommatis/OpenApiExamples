@@ -1,5 +1,7 @@
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OpenApiExamples.Abstractions;
 using OpenApiExamples.Services;
 
@@ -35,6 +37,16 @@ public static class ServiceCollectionExtensions
 
                         options.Formatters[contentType] = formatter;
                     }
+                }
+
+                // The app's serializer is the one ASP.NET Core generates schemas from, so examples follow
+                // it by default and land in the same shape as the schema printed above them. Copied, not
+                // shared: System.Text.Json freezes an instance the first time it serializes anything, and
+                // configureOptions below may still want to add a converter.
+                var appJsonOptions = sp.GetService<IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>>();
+                if (appJsonOptions is not null)
+                {
+                    options.JsonSerializerOptions = new JsonSerializerOptions(appJsonOptions.Value.SerializerOptions);
                 }
 
                 configureOptions?.Invoke(options);

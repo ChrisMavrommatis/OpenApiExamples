@@ -11,7 +11,16 @@ release body, so write these entries for the people using the package, not for t
 
 ## [Unreleased]
 
-Nothing yet.
+### 🔀 Changed
+
+- **Examples now inherit your app's JSON settings.** `AddOpenApiExamples()` takes a copy of the
+  `JsonSerializerOptions` your app already serializes with, so a naming policy, a `JsonStringEnumConverter`
+  or an ignore rule applies to your examples and your schemas at once instead of being configured twice.
+  Setting `options.JsonSerializerOptions` yourself still wins, and replaces the inherited copy rather than
+  adding to it.
+- **If your models are PascalCase and you never configured this, your examples change to camelCase**, which
+  is what your schemas already said. To keep the old output, pass
+  `options.JsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = null }`.
 
 ## [1.1.0] - 2026-08-30
 
