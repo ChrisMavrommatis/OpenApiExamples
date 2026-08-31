@@ -10,7 +10,7 @@
         <Authors>Chris Mavrommatis</Authors>
         <PackageProjectUrl>https://github.com/ChrisMavrommatis/OpenApiExamples</PackageProjectUrl>
         <RepositoryUrl>https://github.com/ChrisMavrommatis/OpenApiExamples</RepositoryUrl>
-        <Version>1.1.0</Version>
+        <Version>1.2.0</Version>
         <PackageIcon>package_icon.png</PackageIcon>
         <AssemblyName>OpenApiExamples</AssemblyName>
         <PackageReadmeFile>README.md</PackageReadmeFile>

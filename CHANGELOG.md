@@ -11,6 +11,8 @@ release body, so write these entries for the people using the package, not for t
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-31
+
 ### 🔀 Changed
 
 - **Examples now inherit your app's JSON settings.** `AddOpenApiExamples()` takes a copy of the
