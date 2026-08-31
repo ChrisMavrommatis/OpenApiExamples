@@ -1,5 +1,9 @@
 name: Release
 
+# A dispatch is listed against main, because the tag does not exist until the last job. Without this the
+# Actions list shows the commit message and nothing says which release a run was.
+run-name: Release v${{ inputs.version }}
+
 # One dispatch does the whole thing: gate, verify, tag, GitHub release, NuGet push.
 #
 # The release body is read from CHANGELOG.md, so the section for this version has to exist and say
