@@ -15,9 +15,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Scalar.AspNetCore" Version="2.17.2" />
+        <PackageReference Include="Scalar.AspNetCore" Version="2.18.0" />
         <!-- The UI only. The document still comes from Microsoft.AspNetCore.OpenApi. -->
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.3.0" />
         <ProjectReference Include="..\..\src\OpenApiExamples\OpenApiExamples.csproj" />
     </ItemGroup>
 
